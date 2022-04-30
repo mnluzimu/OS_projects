@@ -10,6 +10,9 @@
 #include <iostream>
 #include <vector>
 
+#include <dirent.h>
+
+
 #define MAX_CMDLINE_LENGTH  1024    /* max cmdline length in a line*/
 #define MAX_BUF_SIZE        4096    /* max buffer size */
 #define MAX_CMD_ARG_NUM     32      /* max number of single command args */
@@ -335,13 +338,42 @@ void convert_echo(char * cmdline){
     char *argv0[MAX_CMD_ARG_NUM];
     int n = split_string(temp, " ", argv0);
     if(strcmp(argv0[0], "echo") == 0){
+        int flag_cat;
+        
         strcpy(cmdline, argv0[0]);
         for(int i = 1; i < n; i++){
+            flag_cat = 0;
             strcat(cmdline, " ");
             if(strcmp(argv0[i], "~root") == 0){
                 strcat(cmdline, "/root");
+                flag_cat = 1;
             }
-            else{
+            else if(argv0[i][0] == '~'){
+                // printf("argv[i] = %s\n", argv0[i]);
+                int len = strlen(argv0[i]);
+                char t[1000];
+                for(int j = 1; j <= len; j++){
+                    t[j - 1] = argv0[i][j];
+                }
+
+                DIR  *dir;
+                struct    dirent    *ptr;
+                
+                dir = opendir("/home");
+                
+                while((ptr = readdir(dir)) != NULL){
+                    if(strcmp(ptr->d_name, t) == 0){
+                        strcat(cmdline, "/");
+                        strcat(cmdline, ptr->d_name);
+                        flag_cat = 1;
+                    }
+                }
+            
+                closedir(dir);
+                
+            }
+            // printf("flag_cat = %d\n", flag_cat);
+            if(flag_cat == 0){
                 strcat(cmdline, argv0[i]);
             }
         }
@@ -397,6 +429,7 @@ int main() {
             // printf("2:%s\n", cmdline);
             convert_commandline(cmdline);
             convert_echo(cmdline);
+            // printf("cmdlne:%s\n", cmdline);
             cmd_count = split_string(cmdline, "|", commands);
 
             if(cmd_count == 0) {
