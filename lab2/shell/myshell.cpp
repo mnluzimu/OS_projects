@@ -329,6 +329,25 @@ void convert_commandline(char * cmdline){
     fclose(fp);
 }
 
+void convert_echo(char * cmdline){
+    char temp[MAX_CMDLINE_LENGTH];
+    strcpy(temp, cmdline);
+    char *argv0[MAX_CMD_ARG_NUM];
+    int n = split_string(temp, " ", argv0);
+    if(strcmp(argv0[0], "echo") == 0){
+        strcpy(cmdline, argv0[0]);
+        for(int i = 1; i < n; i++){
+            strcat(cmdline, " ");
+            if(strcmp(argv0[i], "~root") == 0){
+                strcat(cmdline, "/root");
+            }
+            else{
+                strcat(cmdline, argv0[i]);
+            }
+        }
+    }
+}
+
 int main() {
     char cmdline[MAX_CMDLINE_LENGTH];
     char path[MAX_CMDLINE_LENGTH];
@@ -377,6 +396,7 @@ int main() {
             process_commandline(cmdline);
             // printf("2:%s\n", cmdline);
             convert_commandline(cmdline);
+            convert_echo(cmdline);
             cmd_count = split_string(cmdline, "|", commands);
 
             if(cmd_count == 0) {
