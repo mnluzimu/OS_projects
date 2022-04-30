@@ -17,6 +17,8 @@
    alias path=pwd
 
    等可以实现添加别名，会被写入一个名为myalias的文件，之后输入ll，path等可以起到同名作用。
+   
+3. echo ~root 功能
 
 由于只有一个文件，使用 g++ myshell.cpp -o myshell 编译，./myshell运行即可。
 
