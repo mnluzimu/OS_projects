@@ -18,3 +18,8 @@
 
 由于只有一个文件，使用 g++ myshell.cpp -o myshell 编译，./myshell运行即可。
 
+## strace:
+
+gcc strace.c -o strace 编译
+
+./strace （true等） 运行
