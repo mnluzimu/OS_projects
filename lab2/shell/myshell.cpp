@@ -363,7 +363,7 @@ void convert_echo(char * cmdline){
                 
                 while((ptr = readdir(dir)) != NULL){
                     if(strcmp(ptr->d_name, t) == 0){
-                        strcat(cmdline, "/");
+                        strcat(cmdline, "/home/");
                         strcat(cmdline, ptr->d_name);
                         flag_cat = 1;
                     }

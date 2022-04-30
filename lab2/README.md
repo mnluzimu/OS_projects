@@ -20,6 +20,8 @@
    
 3. echo ~root 功能
 
+   可以正确输出～后用户的家目录
+
 由于只有一个文件，使用 g++ myshell.cpp -o myshell 编译，./myshell运行即可。
 
 ## strace:
