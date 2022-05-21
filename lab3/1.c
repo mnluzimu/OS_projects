@@ -12,13 +12,13 @@ struct Pipe {
     int fd_recv;
 };
 
-#define MAX_SIZE 5
+#define MAX_SIZE 1048576
 int flag_overflow = 0;
 
 void *handle_chat(void *data) {
     struct Pipe *pipe = (struct Pipe *)data;
-    char buffer[1048576] = "";
-    char str[1048576];
+    char buffer[1048580] = "";
+    char str[1048580];
     ssize_t len;
     while ((len = recv(pipe->fd_send, buffer, MAX_SIZE, 0)) > 0) {
         //printf("len=%d\n%s\n", len, buffer);
@@ -28,20 +28,20 @@ void *handle_chat(void *data) {
             strcpy(str, Message);
             k = 8;
         }
-        else{
+        else{ //if there was an overflow, then this recv is part of the last message
             pre_flag_overflow = 1;
             k = 0;
         }
-        if(len == MAX_SIZE && buffer[len - 1] != '\n'){
-            printf("overflow to 1\n");
+        if(len == MAX_SIZE && buffer[len - 1] != '\n'){ //see if there is an overflow in recv
+            // printf("overflow to 1\n");
             flag_overflow = 1;
         }
         else{
-            printf("overflow to 0\n");
+            // printf("overflow to 0\n");
             flag_overflow = 0;
         }
         int flag_out = 0;
-        for(int i = 0; i < len; i++){
+        for(int i = 0; i < len; i++){//devide the recv into messages by '\n' and send
             if(buffer[i] == '\n'){
                 str[k++] = '\n';
                 str[k] = '\0'; 
