@@ -13,9 +13,10 @@ struct Pipe {
 };
 
 #define MAX_SIZE 1048576
-int flag_overflow = 0;
+
 
 void *handle_chat(void *data) {
+    static int flag_overflow = 0;
     struct Pipe *pipe = (struct Pipe *)data;
     char buffer[1048580] = "";
     char str[1048580];
