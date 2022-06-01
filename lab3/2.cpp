@@ -17,6 +17,7 @@ pthread_cond_t cv = PTHREAD_COND_INITIALIZER;
 
 #define MSGKEY 123
 
+//消息队列结构体
 struct msgcon
 {
     char msgtext[2048];
@@ -55,6 +56,7 @@ int conn_num = 0;
 int msqid;
 #define MAX_CONN 32
 
+//单开一个线程来进行消息发送
 void *send_msg(void *data){
     while(1){
         struct msgstru msgs;
@@ -113,6 +115,7 @@ void *client_run(void *data) {
                 strcpy(msgs.message.msgtext, str);
                 msgs.message.n = client->id;
                 msgs.message.len = k;
+                //在向消息队列发送消息时加锁
                 pthread_mutex_lock(&mutex);
                 int ret_value = msgsnd(msqid, &msgs, sizeof(msgs.message), 0);
                 pthread_mutex_unlock(&mutex);
