@@ -1,5 +1,9 @@
 # lab4 报告
 
+陆子睦
+
+PB20051150
+
 ### ——对小车最佳路径计算算法的ray部署和测试
 
 
@@ -241,5 +245,113 @@ $$
 
 
 
+### 基于 Docker 完成分布式部署并进行性能测试:
 
+#### 实现过程：
+
+首先通过
+
+```shell
+sudo apt-get install docker.io
+```
+
+在ubuntu上安装docker
+
+然后通过
+
+```shell
+sudo docker pull ubuntu
+```
+
+下载unbuntu镜像
+
+之后启动三个ubuntu容器
+
+```shell
+sudo docker run -it --name ubuntu-01 ubuntu bash
+sudo docker run -it --name ubuntu-02 ubuntu bash
+sudo docker run -it --name ubuntu-03 ubuntu bash
+```
+
+并检查IP地址
+
+```shell
+$ sudo docker inspect -f "{{ .NetworkSettings.IPAddress }}" ubuntu-01
+172.17.0.2
+$ sudo docker inspect -f "{{ .NetworkSettings.IPAddress }}" ubuntu-02
+172.17.0.3
+$ sudo docker inspect -f "{{ .NetworkSettings.IPAddress }}" ubuntu-03
+172.17.0.4
+```
+
+之后在三个容器里都安装python、pip、ray
+
+```shell
+apt update && apt install python3 
+apt install python3-pip
+pip install ray -i http://pypi.douban.com/simple --trusted-host pypi.douban.com
+```
+
+把ubuntu-02作为主节点，运行
+
+```shell
+ray start --head --node-ip-address 172.17.0.3
+```
+
+另外两个container为从节点，运行
+
+```shell
+ray start --address='172.17.0.3:6379' --redis-password='5241590000000000'
+```
+
+然后再主节点中建立python文件，把一段测试代码复制进去，设置ray.init()的参数
+
+```shell
+from collections import Counter
+import socket
+import time
+import ray
+ray.init(address='172.17.0.3:6379', _redis_password='5241590000000000')
+print('''This cluster consists o    f
+    {} nodes in total
+    {} CPU resources in total
+'''.format(len(ray.nodes()), ray.cluster_resources()['CPU']))
+@ray.remote
+def f():
+    time.sleep(0.001)
+    # Return IP address.
+    return socket.gethostbyname(socket.gethostname())
+object_ids = [f.remote() for _ in range(10000)]
+ip_addresses = ray.get(object_ids)
+print('Tasks executed')
+for ip_address, num_tasks in Counter(ip_addresses).items():
+    print('    {} tasks on {}'.format(num_tasks, ip_address))
+
+```
+
+运行结果如图：
+
+![1656463094550](./pics/1656463094550.png)
+
+可以看到程序运行在了三个docker节点上
+
+之后为需要测试的代码配环境，安装python库
+
+```shell
+pip install more-itertools -i https://pypi.tuna.tsinghua.edu.cn/simple/ --trusted-host pypi.tuna.tsinghua.edu.cn
+```
+
+建立python文件，把需要测试的代码复制进去，改变ray.init()的参数，运行
+
+```
+python3 ros_ray.py
+```
+
+运行结果如图所示
+
+![1656464480271](./pics/1656464480271.png)
+
+time = 1.501496350999015
+
+时间长可能是因为这一次是在虚拟机上运行的原因（之前一直在Windows的pycharm上测试）
 
